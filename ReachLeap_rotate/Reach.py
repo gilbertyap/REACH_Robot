@@ -17,7 +17,7 @@ from servoLimit import changez
 from servoLimit import changec
 
 
-ser = serial.Serial('COM4', 19200, timeout=0)
+ser = serial.Serial('COM3', 19200, timeout=0)
 
 
 class SampleListener(Leap.Listener):
@@ -50,56 +50,61 @@ class SampleListener(Leap.Listener):
         index_y = 0.0
         index_z = 0.0
 
-        print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d" % (
-              frame.id, frame.timestamp, len(frame.hands), len(frame.fingers))
+        #print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d" % (
+        #      frame.id, frame.timestamp, len(frame.hands), len(frame.fingers))
 
         # Get hands
         for hand in frame.hands:
+            if hand.is_right:
+                handType = "Left hand" if hand.is_left else "Right hand"
 
-            handType = "Left hand" if hand.is_left else "Right hand"
+                for finger in hand.fingers:
+                    distal_bone = finger.bone(3)
 
-            for finger in hand.fingers:
-                bone = finger.bone(3)
+                    if self.finger_names[finger.type] == "Thumb":
+                        thumb_x = distal_bone.next_joint[0]
+                        thumb_y = distal_bone.next_joint[1]
+                        thumb_z = distal_bone.next_joint[2]
 
-                if self.finger_names[finger.type] == "Thumb":
-                    thumb_x = bone.next_joint[0]
-                    thumb_y = bone.next_joint[1]
-                    thumb_z = bone.next_joint[2]
+                    if self.finger_names[finger.type] == "Index":
+                        index_x = distal_bone.next_joint[0]
+                        index_y = distal_bone.next_joint[1]
+                        index_z = distal_bone.next_joint[2]
+                        lower_index_x = distal_bone.prev_joint[0]
+                        lower_index_y = distal_bone.prev_joint[1]
+                        lower_index_z = distal_bone.prev_joint[2]
 
-                if self.finger_names[finger.type] == "Index":
-                    index_x = bone.next_joint[0]
-                    index_y = bone.next_joint[1]
-                    index_z = bone.next_joint[2]
-                    lower_index_x = bone.prev_joint[0]
-                    lower_index_y = bone.prev_joint[1]
-                    lower_index_z = bone.prev_joint[2]
+                    prox_bone = finger.bone(1)
+                    if self.finger_names[finger.type] == "Index":
+                        lower_index_x = prox_bone.prev_joint[0]
+                        lower_index_y = prox_bone.prev_joint[1]
+                        lower_index_z = prox_bone.prev_joint[2]
 
-                bone = finger.bone(2)
-                if self.finger_names[finger.type] == "Index":
-                    lower_index_x = bone.prev_joint[0]
-                    lower_index_y = bone.prev_joint[1]
-                    lower_index_z = bone.prev_joint[2]
 
-            print "  %s, id %d, position: %s" % (handType, hand.id, hand.palm_position)
+                # print "  %s, id %d, position: %s" % (handType, hand.id, hand.palm_position)
 
-            ser.write(chr(240))  # Start of message
+                ser.write(chr(240))  # Start of message
 
-            ser.write(chr(241))  # Horizontal Angle change
-            ser.write(chr(changex(index_x, hand.wrist_position[0], index_z, hand.wrist_position[2])))  # x position - left/right
+                ser.write(chr(241))  # Horizontal Angle change
+                ser.write(chr(changex(index_x, hand.wrist_position[0], index_z, hand.wrist_position[2])))  # x position - left/right
 
-            ser.write(chr(242))  # Vertical Angle change
-            ser.write(chr(changey(index_y, hand.wrist_position[1], index_z, hand.wrist_position[2])))  # y position - up/down
+                ser.write(chr(242))  # Vertical Angle change
+                ser.write(chr(changey(index_y, hand.wrist_position[1], index_z, hand.wrist_position[2])))  # y position - up/down
 
-            ser.write(chr(243))  # Forward/Backward reach
-            ser.write(chr(changez(hand.palm_position[2])))  # z position - forward/backward
+                ser.write(chr(243))  # Forward/Backward reach
+                ser.write(chr(changez(hand.palm_position[2])))  # z position - forward/backward
 
-            ser.write(chr(244))  # Fingers Distance
-            ser.write(chr(changec(thumb_x, lower_index_x, thumb_z, lower_index_z)))
+                ser.write(chr(244))  # Fingers Distance
+                ser.write(chr(changec(thumb_x, lower_index_x, thumb_z, lower_index_z)))
 
-            ser.write(chr(245))  # End of Group
+                ser.write(chr(245))  # End of Group
 
-            time.sleep(0.06)
-            #time.sleep(.8)
+                time.sleep(0.01)
+
+                if hand.grab_strength > 0.95:
+                    print('Sleeping...')
+                    time.sleep(3)
+                    print('Restarting...')
 
     def state_string(self, state):
         if state == Leap.Gesture.STATE_START:
