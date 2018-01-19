@@ -6,19 +6,20 @@
 # between Leap Motion and you, your company or other organization.             #
 ################################################################################
 
+import os, sys, inspect, thread, time
+src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
+arch_dir = '../lib/x64' if sys.maxsize > 2**32 else '../lib/x86'
+
+sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
+
 import Leap
-import sys
-import thread
-import time
 import serial
 from servoLimit import changex
 from servoLimit import changey
 from servoLimit import changez
 from servoLimit import changec
 
-
-ser = serial.Serial('COM4', 19200, timeout=0)
-
+ser = serial.Serial('COM13', 115200, timeout=1)
 
 class SampleListener(Leap.Listener):
     state_names = ['STATE_INVALID', 'STATE_START', 'STATE_UPDATE', 'STATE_END']
@@ -50,8 +51,7 @@ class SampleListener(Leap.Listener):
         index_y = 0.0
         index_z = 0.0
 
-        print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d" % (
-              frame.id, frame.timestamp, len(frame.hands), len(frame.fingers))
+        # print "Frame id: %d,  hands: %d, fingers: %d" % (frame.id, len(frame.hands), len(frame.fingers))
 
         # Get hands
         for hand in frame.hands:
@@ -80,26 +80,20 @@ class SampleListener(Leap.Listener):
                     lower_index_y = bone.prev_joint[1]
                     lower_index_z = bone.prev_joint[2]
 
-            print "  %s, id %d, position: %s" % (handType, hand.id, hand.palm_position)
+            # print "  %s, id %d, position: %s" % (handType, hand.id, hand.palm_position)
 
-            ser.write(chr(240))  # Start of message
+            write_values = [240,  # Start ID
+                            241, changex(index_x, hand.wrist_position[0], index_z, hand.wrist_position[2]),  # base
+                            242, changey(index_y, hand.wrist_position[1], index_z, hand.wrist_position[2]),  # height
+                            243, changez(hand.palm_position[2]),  # reach
+                            244, changec(thumb_x, lower_index_x, thumb_z, lower_index_z),  # claw
+                            245]  # End ID
 
-            ser.write(chr(241))  # Horizontal Angle change
-            ser.write(chr(changex(index_x, hand.wrist_position[0], index_z, hand.wrist_position[2])))  # x position - left/right
+            # Write all values to serial simultaneously
+            print write_values
+            ser.write(write_values)
 
-            ser.write(chr(242))  # Vertical Angle change
-            ser.write(chr(changey(index_y, hand.wrist_position[1], index_z, hand.wrist_position[2])))  # y position - up/down
-
-            ser.write(chr(243))  # Forward/Backward reach
-            ser.write(chr(changez(hand.palm_position[2])))  # z position - forward/backward
-
-            ser.write(chr(244))  # Fingers Distance
-            ser.write(chr(changec(thumb_x, lower_index_x, thumb_z, lower_index_z)))
-
-            ser.write(chr(245))  # End of Group
-
-            time.sleep(0.06)
-            #time.sleep(.8)
+            time.sleep(0.05)
 
     def state_string(self, state):
         if state == Leap.Gesture.STATE_START:

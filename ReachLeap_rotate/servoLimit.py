@@ -50,7 +50,7 @@ def changex(finger_x, wrist_x, finger_z, wrist_z):
     flip = -1.0 if finger_z >= wrist_z else 1.0
 
     horizontal_angle = math.atan(-(wrist_x - finger_x)/(-flip*(finger_z - wrist_z)))*(180.0/math.pi)
-    print(horizontal_angle)
+    # print(horizontal_angle)
     angleXTLimit = servoXTLimit - servoXDefault
     angleXBLimit = servoXDefault - servoXBLimit
 
@@ -69,7 +69,7 @@ def changex(finger_x, wrist_x, finger_z, wrist_z):
 def changey(finger_y, wrist_y, finger_z, wrist_z):
     flip = -1.0 if finger_z >= wrist_z else 1.0
     vertical_angle = math.atan((finger_y-wrist_y)/(-flip*(finger_z-wrist_z)))*(180/math.pi)
-    #print(vertical_angle)
+    # print(vertical_angle)
     angleYTLimit = servoYTLimit - servoYDefault
     angleYBLimit = servoYDefault - servoYBLimit
 
@@ -100,7 +100,7 @@ def changec(finger1_x, finger2_x, finger1_z, finger2_z):
     fingerZDist = abs(finger1_z - finger2_z)
     fingerDist = math.sqrt(abs((fingerXDist ** 2) + (fingerZDist ** 2)))
     fingersCDelta = current_dict['ct'] - current_dict['cb']
-    #print fingerDist
+    # print fingerDist
 
     if fingerDist <= current_dict['cb']:
         return int(servoCTLimit)
