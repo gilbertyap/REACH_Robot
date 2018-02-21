@@ -164,6 +164,8 @@ void loop() {
       digitalWrite(LED, HIGH);
       setMoves(buf);
       digitalWrite(LED, LOW);
+    } else {
+      delay(2);
     }
   }
 }

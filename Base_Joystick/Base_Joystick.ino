@@ -84,26 +84,22 @@ void setup() {
 }
 
 void loop() {
-  analogInputValX = analogRead(analogInputPinX) - 542;
-  analogInputValY = -1 * analogRead(analogInputPinY) + 525;
+  analogInputValX = analogRead(analogInputPinX)-540;
+  analogInputValY = -1* analogRead(analogInputPinY)+525;
   numOfCycles++;
   digitalX += round(analogInputValX);
   digitalY += round(analogInputValY);
-
-  /*
-  Serial.print("X: ");
-  Serial.print(analogInputValX);
-  Serial.print(", Y: ");
-  Serial.print(analogInputValY);
-  Serial.println(" "); // println, to end with a carriage return
-  */
 
   // Send transmission every 10 ms
   if(millis() % 10 != 0) {
     // Low pass filter for values
     digitalX = digitalX/numOfCycles;
     digitalY = digitalY/numOfCycles;
+    
     numOfCycles = 0;
+    digitalX = 0;
+    digitalY = 0;
+    
     // Change 2D coordinates to tire control
     int motorX = changeX(digitalX);
     int motorY = changeY(digitalY);
@@ -119,7 +115,7 @@ void loop() {
       // Now wait for a reply from the server
       uint8_t len = sizeof(buf);
       uint8_t from;
-      if (rf69_manager.recvfromAckTimeout(buf, &len, 2000, &from)) {
+      if (rf69_manager.recvfromAckTimeout(buf, &len, 100, &from)) {
         buf[len] = 0; // zero out remaining string
 
         Serial.print("Got reply from #"); Serial.print(from);
@@ -133,8 +129,9 @@ void loop() {
     } else {
       Serial.println("Sending failed (no ack)");
     }
+    
   } else {
-    delay(2);
+    delay(5);
   }
 }
 
