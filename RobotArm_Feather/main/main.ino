@@ -1,8 +1,6 @@
 // TO DO:
 // Implement a motion profile (sinusoidal? triangular?)
-// Implement base motor control (separate/parallel threads?)
 // Best frequency calibration (check RSSI on various channels?)
-// Timer for performing actions ever x seconds
 
 #include "math.h"
 #include <Servo.h>
@@ -64,7 +62,6 @@ int moveToC = 0;
 
 // Dont put this on the stack:
 uint8_t data[] = "Node 2 Acknowledges";
-// Dont put this on the stack:
 uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
 
 void setup() {
@@ -148,21 +145,21 @@ void loop() {
     }
 
     // Update the buffers for the base and for the arm
-    // TODO: REMOVE START AND STOP BYTES?
+    // TODO: REMOVE START AND STOP BYTES? CHECK sizeof(buf) LINE FOR MATCHING ARRAY SIZES
     if(from == COMPUTER_ADDRESS) {
       digitalWrite(LED, HIGH);
-      memcpy(armBuf, buf, sizeof(buf)*sizeof(uint8_t));
+      memcpy(armBuf, buf, sizeof(buf));
       digitalWrite(LED, LOW);
     } else if (from == JOYSTICK_ADDRESS) {
         digitalWrite(LED, HIGH);
-        memcpy(baseBuf, buf, sizeof(buf)*sizeof(uint8_t));
+        memcpy(baseBuf, buf, sizeof(buf));
         digitalWrite(LED, LOW);
     }
 
     // Every 10 milliseconds, update all motors (is 10 ms too long?)
     if (millis() % 10 != 0) {
       digitalWrite(LED, HIGH);
-      setMoves(buf);
+      setMotors(armBuf, baseBuf);
       digitalWrite(LED, LOW);
     } else {
       delay(2);
@@ -170,6 +167,16 @@ void loop() {
   }
 }
 
+// Distribute motor controls to corresponding functions
+void setMotors(uint8_t armBuf[], uint8_t baseBuf[]) {
+  // Set Motors first (since their value will hold continously)
+  setBaseMotors(baseBuf);
+  
+  // Then set servo motors
+  setMoves(armBuf);
+}
+
+// Blink LED
 void Blink(byte PIN, byte DELAY_MS, byte loops) {
   for (byte i = 0; i < loops; i++)  {
     digitalWrite(PIN, HIGH);

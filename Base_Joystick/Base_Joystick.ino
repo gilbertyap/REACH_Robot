@@ -15,6 +15,9 @@
 #define LED           12
 #endif
 
+#define X_PIN = 1;
+#define Y_PIN = 0;
+
 // Singleton instance of the radio driver
 RH_RF69 rf69(RFM69_CS, RFM69_INT);
 
@@ -25,21 +28,21 @@ int16_t packetnum = 0;  // packet counter, we increment per xmission
 
 // Dont put this on the stack:
 char serial_packet[10];
-char old_serial_packet[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
 uint8_t data[] = "  OK";
 /************ END Radio Setup ***************/
 
 //source: http://www.goodliffe.org.uk/arduino/joystick.php
 //values are such that (9,6) [min] is the top left corner of the joystick
-int analogInputPinX = 1;
-int analogInputPinY = 0;
+
+int adjustX = -540;
+int adjustY = 525;
 long analogInputValX;
 long analogInputValY;
 int digitalX;
 int digitalY;
-int packet_length = 4;
-int numOfCycles = 0;
+uint8_t packet_length = 2;
+uint8_t numOfCycles = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -79,36 +82,36 @@ void setup() {
   rf69.setEncryptionKey(key);
   Serial.print("RFM69 radio @");  Serial.print((int)RF69_FREQ);  Serial.println(" MHz");
 
-  pinMode(analogInputPinX, INPUT);
-  pinMode(analogInputPinY, INPUT);
+  pinMode(X_PIN, INPUT);
+  pinMode(Y_PIN, INPUT);
 }
 
 void loop() {
-  analogInputValX = analogRead(analogInputPinX)-540;
-  analogInputValY = -1* analogRead(analogInputPinY)+525;
+  // Sum up x number of loops of data to be averaged on transmission
+  analogInputValX = analogRead(X_PIN)+adjustX;
+  analogInputValY = -1*analogRead(Y_PIN)+adjustY;
   numOfCycles++;
   digitalX += round(analogInputValX);
   digitalY += round(analogInputValY);
 
   // Send transmission every 10 ms
-  if(millis() % 10 != 0) {
+  if(millis() % 10 == 0) {
     // Low pass filter for values
     digitalX = digitalX/numOfCycles;
     digitalY = digitalY/numOfCycles;
-    
+
+    // Change 2D coordinates to tire control  
+    uint8_t motorX = round(128.0+(digitalX)/(2*adjustX))*256.0);
+    uint8_t motorY = round(128.0+(digitalY)/(2*adjustY))*256.0);
+
+    // Reset values
     numOfCycles = 0;
     digitalX = 0;
     digitalY = 0;
     
-    // Change 2D coordinates to tire control
-    int motorX = changeX(digitalX);
-    int motorY = changeY(digitalY);
-
     // Since int is 2 bytes, need to split each motor value into 2 char (1 byte)
-    buf[0] = char(motorX>>8);
-    buf[1] = char(motorX);
-    buf[2] = char(motorY>>8);
-    buf[3] = char(motorY);
+    buf[0] = char(motorX);
+    buf[1] = char(motorY);
     
     // Send values to base
     if (rf69_manager.sendtoWait((uint8_t *)serial_packet, strlen(serial_packet), DEST_ADDRESS)) {
@@ -129,21 +132,8 @@ void loop() {
     } else {
       Serial.println("Sending failed (no ack)");
     }
-    
   } else {
+    // Delay of 5ms on loops that aren't a transmission
     delay(5);
   }
 }
-
-// Determines the amount of turning
-int changeX(int axisX) {
-  // Check these min/max values
-  return ((1-axisX)*-255) + (axisX*255);
-}
-
-// Determines that forward/backward speed
-int changeY(int axisY) {
-  // Check these min/max values
-  return ((1-axisY)*-255) + (axisY*255);
-}
-

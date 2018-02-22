@@ -1,25 +1,26 @@
 // Reads for different serial data and "moveTo" values then executes
-void setMoves(uint8_t buf[]) {
+// TODO is this header value checking redundant?
+void setMoves(uint8_t armBuf[]) {
 
-  if (buf[0] == 240) { // Start indicator
-    if (buf[1] == 241) { // Indicator for X value
-      moveToB = buf[2]; // read again since value that follows is X
+  if (armBuf[0] == 240) { // Start indicator
+    if (armBuf[1] == 241) { // Indicator for X value
+      moveToB = armBuf[2]; // read again since value that follows is X
     }
 
-    if (buf[3] == 242) { // Indicator for Y Value
-      moveToH = buf[4]; // read for H
+    if (armBuf[3] == 242) { // Indicator for Y Value
+      moveToH = armBuf[4]; // read for H
     }
 
-    if (buf[5] == 243) { // Indicator for Z value "reach"
-      moveToR = buf[6]; // read for R
+    if (armBuf[5] == 243) { // Indicator for Z value "reach"
+      moveToR = armBuf[6]; // read for R
     }
 
-    if (buf[7] == 244) { // Indicator for Claw`
-      moveToC = buf[8]; // read for C
+    if (armBuf[7] == 244) { // Indicator for Claw`
+      moveToC = armBuf[8]; // read for C
     }
   }
 
-  if (buf[9] == 245) { // end of all coordinates
+  if (armBuf[9] == 245) { // end of all coordinates
     // Move motors
     multiStepTo(moveToB, moveToR, moveToH, moveToC);
   }
