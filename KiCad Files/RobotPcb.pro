@@ -1,4 +1,8 @@
-update=4/6/2018 10:14:40 AM
+<<<<<<< HEAD
+update=4/27/2018 3:21:44 PM
+=======
+update=4/27/2018 12:46:55 PM
+>>>>>>> dafa4ae... Added schematic PDF, updated pinout for PCB
 version=1
 last_client=kicad
 [pcbnew]
@@ -67,3 +71,17 @@ LibName35=adafruit
 LibName36=vreg
 LibName37=lm2576
 LibName38=L293D
+<<<<<<< HEAD
+LibName39=SPDT
+=======
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60
+>>>>>>> dafa4ae... Added schematic PDF, updated pinout for PCB

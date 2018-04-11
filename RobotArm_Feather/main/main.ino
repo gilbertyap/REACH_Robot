@@ -11,7 +11,7 @@
 /************ Radio Setup ***************/
 #define RF69_FREQ      915.0
 #define MY_ADDRESS     1
-#define JOYSTICK_ADDRESS  3  
+#define JOYSTICK_ADDRESS  3
 #define COMPUTER_ADDRESS  2
 
 #if defined(ARDUINO_SAMD_FEATHER_M0) // Feather M0 w/Radio
@@ -22,8 +22,8 @@
 #endif
 /************ END Radio Setup ***************/
 
-#define LEFT_MOTOR_FORWARD    9
-#define LEFT_MOTOR_BACKWARD   8
+#define LEFT_MOTOR_FORWARD    18
+#define LEFT_MOTOR_BACKWARD   17
 #define RIGHT_MOTOR_FORWARD   11
 #define RIGHT_MOTOR_BACKWARD  12
 #define WHEEL_EN              13
@@ -84,9 +84,9 @@ void setup() {
     Serial.println("RFM69 radio init failed");
     while (1);
   }
-  
+
   Serial.println("RFM69 radio init OK!");
-  
+
   // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM (for low power module)
   // No encryption
   if (!rf69.setFrequency(RF69_FREQ)) {
@@ -102,10 +102,10 @@ void setup() {
   rf69.setEncryptionKey(key);
 
   // Assign servos
-  baseServo.attach(5); // Attach servos to PWM IO
-  heightServo.attach(6);
-  clawServo.attach(9);
-  reachServo.attach(10);
+  baseServo.attach(10); // Attach servos to PWM IO
+  heightServo.attach(9);
+  reachServo.attach(6);
+  clawServo.attach(5);
 
   // Assign base motor control IO
   pinMode(LEFT_MOTOR_FORWARD,OUTPUT);
@@ -127,7 +127,7 @@ void loop() {
   // Buffers for the arm and base movements
   uint8_t armBuf[8];
   uint8_t baseBuf[2];
-  
+
   // Check for message first
   if (rf69_manager.available()) {
     uint8_t len = sizeof(buf);
@@ -171,7 +171,7 @@ void loop() {
 void setMotors(uint8_t armBuf[], uint8_t baseBuf[]) {
   // Set Motors first (since their value will hold continously)
   setBaseMotors(baseBuf);
-  
+
   // Then set servo motors
   setMoves(armBuf);
 }
