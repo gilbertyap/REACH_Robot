@@ -6,15 +6,15 @@ EESchema-LIBRARY Version 2.3
 # L293D
 #
 DEF L293D IC 0 40 Y Y 1 L N
-F0 "IC" -400 841 50 H V L BNN
+F0 "IC" -401 841 50 H V L BNN
 F1 "L293D" -401 -901 50 H V L BNN
 F2 "DIL16" 0 0 50 H I L BNN
-F3 "L293D" 0 0 50 H I L BNN
-F4 "2.44 USD" 0 0 50 H I L BNN
-F5 "Good" 0 0 50 H I L BNN
+F3 "2.43 USD" 0 0 50 H I L BNN
+F4 "STMicroelectronics" 0 0 50 H I L BNN
+F5 "Driver; 36V; Power DIP; 600mA Low LevelO/P; 1.2A O/P High Level; 4 Drivers; 7V" 0 0 50 H I L BNN
 F6 "SOIC-20 STMicroelectronics" 0 0 50 H I L BNN
-F7 "STMicroelectronics" 0 0 50 H I L BNN
-F8 "Driver; 36V; Power DIP; 600mA Low LevelO/P; 1.2A O/P High Level; 4 Drivers; 7V" 0 0 50 H I L BNN
+F7 "Good" 0 0 50 H I L BNN
+F8 "L293D" 0 0 50 H I L BNN
 DRAW
 P 2 0 0 10 -400 800 -400 -800 N
 P 2 0 0 10 -400 -800 400 -800 N

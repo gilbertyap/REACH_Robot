@@ -1,4 +1,4 @@
-update=3/13/2018 7:26:16 PM
+update=4/6/2018 10:14:40 AM
 version=1
 last_client=kicad
 [pcbnew]
@@ -65,5 +65,5 @@ LibName33=C:/Users/mphung/Downloads/L293D/L293D
 LibName34=C:/Users/mphung/Downloads/LM2576/LM2576
 LibName35=adafruit
 LibName36=vreg
-LibName37=L293D
-LibName38=lm2576
+LibName37=lm2576
+LibName38=L293D
