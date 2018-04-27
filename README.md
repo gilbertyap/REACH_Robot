@@ -16,6 +16,9 @@
 - [Computer that meets the Leap Motion Controller minimum requirements](https://support.leapmotion.com/hc/en-us/articles/223783668-What-are-the-system-requirements-)
 - At least two (2) dedicated USB ports (splitters will not work) for the Leap Motion controller and one (1) Feather M0 RFM95
 
+###### KiCad Files
+KiCad files and other schematic drawings for the arm/base printer circuit board.
+
 ###### ReachLeap and ReachLeap_Rotate
 These folders contain the Python code for recognizing movement with the Leap Motion controller. The ```_rotate``` suffix refers to using rotational movement system, whereas no suffix refers to XYZ coordinate movement. These folder rely on a text file with the limitations of movement, currently titled ```test_limits.txt```. Hand positions relative to these limits are calculated and converted to motor positions for the robot arm, then sent over serial to the Feather M0 RFM95 connected to the computer via USB.
 
