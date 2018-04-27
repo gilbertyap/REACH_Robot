@@ -2,7 +2,7 @@
 [Northeastern University ReGame-VR Lab](http://www.northeastern.edu/regamevrlab/) [REACH Robot](https://www.northeastern.edu/rise/presentations/motion-capture-based-robotic-interfaces-enhance-engagement-adherence-pediatric-rehabilitation/) software
 
 ## Software requirements
-- Leap Motion Controller SDK (currently using version 2.3.1, *NOT* the Orion SDK (versions 3 and up) which made changes to specific function calls)
+- Leap Motion Controller SDK (currently using ~~version 2.3.1, *NOT* the~~ Orion SDK (versions 3 and up) ~~which made changes to specific function calls~~ (02/21/2018 code working with Orion version 3))
 - Python 2.7 (version 3 is incompatible with current code)
 - PyCharm Community Edition for running Leap code in a terminal window
 - Arduino IDE

@@ -12,7 +12,6 @@
 #include <RH_RF69.h>
 #include <RHReliableDatagram.h>
 /************ Radio Setup ***************/
-
 // Change to 434.0 or other frequency, must match RX's freq!
 #define RF69_FREQ 915.0
 
@@ -20,7 +19,6 @@
 #define DEST_ADDRESS   1
 // change addresses for each client board, any number :)
 #define MY_ADDRESS     2
-
 
 #if defined(ARDUINO_SAMD_FEATHER_M0) // Feather M0 w/Radio
 #define RFM69_CS      8
@@ -69,9 +67,7 @@ void setup()
   rf69.setTxPower(20, true);  // range from 14-20 for power, 2nd arg must be true for 69HCW
 
   // The encryption key has to be the same as the one in the server
-  uint8_t key[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-                    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08
-                  };
+  uint8_t key[] = "ReGameVrLab";
   rf69.setEncryptionKey(key);
 
   Serial.print("RFM69 radio @");  Serial.print((int)RF69_FREQ);  Serial.println(" MHz");
@@ -84,9 +80,11 @@ uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
 uint8_t data[] = "  OK";
 
 void loop() {
+  // Number of bytes in the packet
   int packet_length = 10;
 
-  Serial.println(Serial.peek());
+  // Check for
+  // Serial.println(Serial.peek());
   if (Serial.peek() == 240) {
     for (int i = 0; i < packet_length; i++) {
       serial_packet[i] = Serial.read();
@@ -94,37 +92,40 @@ void loop() {
     }
   }
 
-  //delay(0.01);  // Wait 1 second between transmits, could also 'sleep' here!
+  // Make it so that a message is sent ever 10 ms
+  if (millis() % 10 != 0) {
+    if (!samePackets(old_serial_packet, serial_packet)) {
 
-  if (!samePackets(old_serial_packet, serial_packet)) {
+      Serial.print("Sending "); Serial.println(serial_packet);
 
-    Serial.print("Sending "); Serial.println(serial_packet);
+      // Send a message to the DESTINATION!
+      if (rf69_manager.sendtoWait((uint8_t *)serial_packet, strlen(serial_packet), DEST_ADDRESS)) {
+        // Now wait for a reply from the server
+        uint8_t len = sizeof(buf);
+        uint8_t from;
+        if (rf69_manager.recvfromAckTimeout(buf, &len, 2000, &from)) {
+          buf[len] = 0; // zero out remaining string
 
-    // Send a message to the DESTINATION!
-    if (rf69_manager.sendtoWait((uint8_t *)serial_packet, strlen(serial_packet), DEST_ADDRESS)) {
-      // Now wait for a reply from the server
-      uint8_t len = sizeof(buf);
-      uint8_t from;
-      if (rf69_manager.recvfromAckTimeout(buf, &len, 2000, &from)) {
-        buf[len] = 0; // zero out remaining string
+          Serial.print("Got reply from #"); Serial.print(from);
+          Serial.print(" [RSSI :");
+          Serial.print(rf69.lastRssi());
+          Serial.print("] : ");
+          Serial.println((char*)buf);
 
-        Serial.print("Got reply from #"); Serial.print(from);
-        Serial.print(" [RSSI :");
-        Serial.print(rf69.lastRssi());
-        Serial.print("] : ");
-        Serial.println((char*)buf);
+          // Give old_serial_packet the value of the newest packet
+          for (int i = 0; i < packet_length; i++) {
+            old_serial_packet[i] = serial_packet[i];
+          }
 
-        // Give old_serial_packet the value of the newest packet
-        for (int i = 0; i < packet_length; i++) {
-          old_serial_packet[i] = serial_packet[i];
+        } else {
+          Serial.println("No reply, is anyone listening?");
         }
-
       } else {
-        Serial.println("No reply, is anyone listening?");
+        Serial.println("Sending failed (no ack)");
       }
-    } else {
-      Serial.println("Sending failed (no ack)");
     }
+  } else {
+    delay(2);
   }
 }
 

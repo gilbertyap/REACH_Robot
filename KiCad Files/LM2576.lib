@@ -1,0 +1,34 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#(c) SnapEDA 2016 (snapeda.com)
+#This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA) with Design Exception 1.0
+#
+# LM2576
+#
+DEF LM2576 IC 0 40 Y Y 1 L N
+F0 "IC" -301 327 50 H V L BNN
+F1 "LM2576" -301 -401 50 H V L BNN
+F3 "Integrated Circuit" 0 0 50 H I L BNN
+F4 "Unavailable" 0 0 50 H I L BNN
+F5 "LM2576" 0 0 50 H I L BNN
+F6 "None" 0 0 50 H I L BNN
+F7 "National Semiconductor" 0 0 50 H I L BNN
+F8 "TO-263-6 National Semiconductor" 0 0 50 H I L BNN
+$FPLIST
+ TO220-5
+ TO263-5
+$ENDFPLIST
+DRAW
+P 2 0 0 10 -300 300 -300 -300 N
+P 2 0 0 10 -300 -300 400 -300 N
+P 2 0 0 10 400 -300 400 300 N
+P 2 0 0 10 400 300 -300 300 N
+X VIN 1 -400 200 100 R 40 40 0 0 W 
+X OFF 5 -400 0 100 R 40 40 0 0 I 
+X FB 4 500 200 100 L 40 40 0 0 I 
+X OUT 2 500 0 100 L 40 40 0 0 O 
+X GND 3 500 -200 100 L 40 40 0 0 W 
+ENDDRAW
+ENDDEF
+#
+# End Library

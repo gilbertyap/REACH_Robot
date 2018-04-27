@@ -1,7 +1,7 @@
 // TO DO:
 // Implement a motion profile (sinusoidal? triangular?)
 // Implement base motor control (separate/parallel threads?)
-// Need to figure out how to receive computer vs joystick messages, etc
+// Best frequency calibration (check RSSI on various channels?)
 
 #include "math.h"
 #include <Servo.h>
@@ -12,6 +12,8 @@
 /************ Radio Setup ***************/
 #define RF69_FREQ      915.0
 #define MY_ADDRESS     1
+#define JOYSTICK_ADDRESS  3  
+#define COMPUTER_ADDRESS  2
 
 #if defined(ARDUINO_SAMD_FEATHER_M0) // Feather M0 w/Radio
 #define RFM69_CS      8
@@ -22,6 +24,11 @@
 /************ END Radio Setup ***************/
 
 // #define STOP_BTN      11
+LEFT_MOTOR_FORWARD    9
+LEFT_MOTOR_BACKWARD   8
+RIGHT_MOTOR_FORWARD   11
+RIGHT_MOTOR_BACKWARD  12
+WHEEL_EN              13
 
 // Singleton instance of the radio driver
 RH_RF69 rf69(RFM69_CS, RFM69_INT);
@@ -55,8 +62,6 @@ int moveToR = 0;
 int moveToH = 0;
 int moveToC = 0;
 
-int readBuffer;
-
 // Dont put this on the stack:
 uint8_t data[] = "Node 2 Acknowledges";
 // Dont put this on the stack:
@@ -64,9 +69,6 @@ uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
 
 void setup() {
   Serial.begin(115200);
-
-  // Stop button
-  // pinMode(STOP_BTN, INPUT_PULLUP);
 
   // Reset Radio
   pinMode(RFM69_RST, OUTPUT);
@@ -85,7 +87,9 @@ void setup() {
     Serial.println("RFM69 radio init failed");
     while (1);
   }
+  
   Serial.println("RFM69 radio init OK!");
+  
   // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM (for low power module)
   // No encryption
   if (!rf69.setFrequency(RF69_FREQ)) {
@@ -108,6 +112,13 @@ void setup() {
   clawServo.attach(9);
   reachServo.attach(10);
 
+  // Assign base motor control IO
+  pinMode(LEFT_MOTOR_FORWARD,OUTPUT);
+  pinMode(LEFT_MOTOR_BACKWARD,OUTPUT);
+  pinMode(RIGHT_MOTOR_FORWARD,OUTPUT);
+  pinMode(RIGHT_MOTOR_BACKWARD,OUTPUT);
+  pinMode(WHEEL_EN, OUTPUT);
+
   // Status LED
   pinMode(LED, OUTPUT);
   digitalWrite(LED, LOW);
@@ -124,20 +135,28 @@ void loop() {
     uint8_t len = sizeof(buf);
     uint8_t from;
 
+    // If a message is received
     if (rf69_manager.recvfromAck(buf, &len, &from)) {
       buf[len] = 0; // zero out remaining string
 
-      // Serial.print("Got packet from #"); Serial.print(from);
-      // Serial.print(" [RSSI :");
-      // Serial.print(rf69.lastRssi());
-      // Serial.print("] : ");
-      // Serial.println((char*)buf);
+      /*
+      Serial.print("Got packet from #"); Serial.print(from);
+      Serial.print(" [RSSI :");
+      Serial.print(rf69.lastRssi());
+      Serial.print("] : ");
+      Serial.println((char*)buf);
+      */
+      
       Blink(LED, 1, 3); //blink LED 3 times, 1ms between blinks
 
       // Send a reply back to the originator client
       if (!rf69_manager.sendtoWait(data, sizeof(data), from)) {
         //Serial.println("Sending failed (no ack)");
       }
+    }
+
+    if(from == COMPUTER_ADDRESS) {
+      
     }
 
     if (buf[0] == 240 && buf[9] == 245) {
